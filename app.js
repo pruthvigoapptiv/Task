@@ -12,7 +12,7 @@ pdfparse(pdffile).then(function (data) {
   console.log('Text Content:', data.text);
 
   const dateRegex = /Dated\s+:(\d{2}-\d{2}-\d{4})/;
-  var docnopattern = /(\d+\/\d+\/[A-Z]\d+-\d+)/;
+  var docnopattern = /([A-Z]{9})+(\d{6})/;
 
   let match;
   var i = 0;
@@ -27,7 +27,17 @@ pdfparse(pdffile).then(function (data) {
       break;
     }
   }
-
+let match1;
+var i =0;
+while ((match1 = docnopattern.exec(data.text)) !== null) {
+  const currentDate = match1[0];
+  console.log("Remarks: " + currentDate);
+  extractedDates.push({ Remarks: currentDate });
+  i = i + 1;
+  if (i >= data.numpages) {
+    break;
+  }
+}
   // Export extracted dates to Excel
   const ws = XLSX.utils.json_to_sheet(extractedDates);
   const wb = XLSX.utils.book_new();
