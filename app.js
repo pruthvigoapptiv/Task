@@ -11,34 +11,65 @@ pdfparse(pdffile).then(function (data) {
 
   var dateAns;
   var totalAns;
+  var docNo;
+  var ToTitle;
+  var remarks;
 for(let i=0;i<data.text.length-20;i++)
 {
+  if(data.text.substr(i,7)=="Message")
+  {
+    i=i+9
+    remarks=data.text.substr(i,15);
+  }
+  if(data.text[i]==']')
+  {
+  var k =i;
+   for( k=i;k>=10;k--)
+   {
+    if(data.text[k]=='m')
+    {
+      break;
+    }
+   }
+   k=k+2
+   var temp=""
+   for(k=k;k<k+60;k++)
+   {
+    temp+=data.text[k]
+    if(data.text[k]==']')
+    {
+      
+      break;
+    }
+   }
+   ToTitle=temp;
+  }
 if(data.text[i]=='D' && data.text[i+1]=='a' && data.text[i+2]=='t' && data.text[i+4]=='d')
 {
   dateAns = data.text.substr(i,18);
 }
 
-if(
-  data.text[i]=='A' && 
-  data.text[i+1]=='m' &&
-  data.text[i+2]=='o' &&
-  data.text[i+7]=='i' &&
-  data.text[i+8]=='n' 
-
-  
-  )
+if(data.text.substr(i,15)=="Amount in words")
 {
   var temp = "";
-  while(data.text[i+18]!='.')
+  i=i+18;
+  while(data.text[i]!='.')
   {
-    temp+=data.text[i+18]
+    temp+=data.text[i]
     i++;
   }
   totalAns=temp;
-  extractedDates.push({ Dated: dateAns, GrandTotal: totalAns });
 
 
 }
+if(data.text.substr(i,7)=="Doc No.")
+{
+  i=i+7
+  docNo = data.text.substr(i,14)
+  extractedDates.push({To: ToTitle, Dated: dateAns, GrandTotal: totalAns, DocNo : docNo, Remarks: remarks });
+
+}
+
 }
   // Export extracted dates to Excel
   const ws = XLSX.utils.json_to_sheet(extractedDates);
