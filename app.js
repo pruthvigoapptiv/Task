@@ -6,7 +6,6 @@ const pdffile = fs.readFileSync('one.pdf');
 
 pdfparse(pdffile).then(function (data) {
   console.log('Number of Pages:', data.numpages);
-  console.log('Text Content:', data.text);
   const extractedDates = [];
 
   var dateAns;
@@ -14,8 +13,10 @@ pdfparse(pdffile).then(function (data) {
   var docNo;
   var ToTitle;
   var remarks;
+  // iteration over the whole string of the pdf and search for the required field mentioned above
 for(let i=0;i<data.text.length-20;i++)
 {
+  // conditon for To:Title using the logic that is it followed by email and ends at char ']' 
   if(data.text.substr(i,7)=="Message")
   {
     i=i+9
@@ -43,34 +44,40 @@ for(let i=0;i<data.text.length-20;i++)
     }
    }
    ToTitle=temp;
+   console.log(ToTitle);
   }
-if(data.text[i]=='D' && data.text[i+1]=='a' && data.text[i+2]=='t' && data.text[i+4]=='d')
-{
-  dateAns = data.text.substr(i,18);
-}
-
-if(data.text.substr(i,15)=="Amount in words")
-{
-  var temp = "";
-  i=i+18;
-  while(data.text[i]!='.')
+    //For Dated just check whether the string Dated is present or not 
+  if(data.text.substr(i,5)=="Dated")
   {
-    temp+=data.text[i]
-    i++;
+    dateAns = data.text.substr(i,18);
+    console.log(dateAns);
   }
-  totalAns=temp;
+  // For Grand Total it is after the string Amount in words 
+  if(data.text.substr(i,15)=="Amount in words")
+  {
+    var temp = "";
+    i=i+18;
+    while(data.text[i]!='.')
+    {
+      temp+=data.text[i]
+      i++;
+    }
+    totalAns=temp;
 
+
+  }
+// Similar logic is for Doc No.
+    if(data.text.substr(i,7)=="Doc No.")
+    {
+      i=i+7
+      docNo = data.text.substr(i,14)
+      // Syntax for exporting everything to excel
+      extractedDates.push({To: ToTitle, Dated: dateAns, GrandTotal: totalAns, DocNo : docNo, Remarks: remarks });
+
+    }
 
 }
-if(data.text.substr(i,7)=="Doc No.")
-{
-  i=i+7
-  docNo = data.text.substr(i,14)
-  extractedDates.push({To: ToTitle, Dated: dateAns, GrandTotal: totalAns, DocNo : docNo, Remarks: remarks });
 
-}
-
-}
   // Export extracted dates to Excel
   const ws = XLSX.utils.json_to_sheet(extractedDates);
 
